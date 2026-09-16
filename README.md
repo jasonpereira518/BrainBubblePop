@@ -1,8 +1,8 @@
 # Brain Bubble Pop
 
-A single-file browser game for study breaks — pop bubbles to de-stress, built around a study/break timer.
+🏆 **1st Place Winner — Anthropic Claude AI Hackathon**
 
-Built for the Anthropic Claude AI Hackathon.
+A single-file browser game for study breaks — pop bubbles to de-stress, built around a study/break timer.
 
 ## Play it
 
