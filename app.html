@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Bubble Pop - Study Break Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #312e81 0%, #7e22ce 50%, #be185d 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .stars {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .sparkle {
+            color: #fde047;
+            animation: pulse 2s infinite;
+        }
+
+        .subtitle {
+            color: #fbcfe8;
+            font-size: 1.2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .timer-display {
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .timer-display.study {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        }
+
+        .timer-display.break {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .timer-label {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 4px;
+        }
+
+        .timer-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-blue {
+            background: #3b82f6;
+        }
+
+        .btn-blue:hover {
+            background: #2563eb;
+        }
+
+        .btn-green {
+            background: #10b981;
+        }
+
+        .btn-green:hover {
+            background: #059669;
+        }
+
+        .btn-yellow {
+            background: #eab308;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-yellow:hover {
+            background: #ca8a04;
+        }
+
+        .btn-red {
+            background: #ef4444;
+            flex: 0 0 auto;
+            padding: 12px;
+        }
+
+        .btn-red:hover {
+            background: #dc2626;
+        }
+
+        .status-text {
+            text-align: center;
+            font-weight: 600;
+            margin-top: 16px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-study {
+            color: #93c5fd;
+        }
+
+        .status-break {
+            color: #6ee7b7;
+        }
+
+        .score-display {
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .high-score {
+            color: #fbcfe8;
+            font-size: 1.1rem;
+        }
+
+        .combo-badge {
+            margin-top: 16px;
+            background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+            border-radius: 8px;
+            padding: 12px;
+            animation: bounce 1s infinite;
+        }
+
+        .combo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .combo-bonus {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .instructions {
+            color: #fbcfe8;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            list-style: none;
+        }
+
+        .game-area {
+            position: relative;
+            background: linear-gradient(180deg, rgba(30, 58, 138, 0.3) 0%, rgba(88, 28, 135, 0.3) 100%);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            height: 500px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            cursor: none; /* Hide default cursor in game area */
+        }
+
+        .game-area .cursor-trail {
+            display: block;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .bubble:hover {
+            transform: scale(1.1);
+        }
+
+        .bubble-inner {
+            position: absolute;
+            inset: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            filter: blur(4px);
+        }
+
+        .bubble.color-1 {
+            background: linear-gradient(135deg, #f472b6 0%, #fb7185 100%);
+        }
+
+        .bubble.color-2 {
+            background: linear-gradient(135deg, #c084fc 0%, #818cf8 100%);
+        }
+
+        .bubble.color-3 {
+            background: linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%);
+        }
+
+        .bubble.color-4 {
+            background: linear-gradient(135deg, #4ade80 0%, #10b981 100%);
+        }
+
+        .bubble.color-5 {
+            background: linear-gradient(135deg, #facc15 0%, #fb923c 100%);
+        }
+
+        .bubble.color-6 {
+            background: linear-gradient(135deg, #f87171 0%, #f472b6 100%);
+        }
+
+        .bubble.bomb {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            animation: bomb-pulse 0.5s infinite;
+        }
+
+        @keyframes bomb-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(239, 68, 68, 0.8); }
+        }
+
+        .bomb-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+        }
+
+        .particle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: particle-burst 0.5s ease-out forwards;
+        }
+
+        @keyframes particle-burst {
+            to {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .footer-text {
+            color: #fbcfe8;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Cursor trail */
+        .cursor-trail {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            animation: trail-fade 0.3s ease-out forwards;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes trail-fade {
+            to {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title">
+                <span class="sparkle">✨</span>
+                Brain Bubble Pop
+                <span class="sparkle">✨</span>
+            </h1>
+            <p class="subtitle">Pop bubbles to de-stress during your study break!</p>
+        </div>
+
+        <div class="grid">
+            <!-- Timer Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span>🕐</span>
+                    <h2 class="card-title">Study Timer</h2>
+                </div>
+                <div>
+                    <div class="timer-display study">
+                        <div class="timer-label">Study Time</div>
+                        <div class="timer-value" id="studyTime">25:00</div>
+                    </div>
+                    <div class="timer-display break">
+                        <div class="timer-label">Break Time</div>
+                        <div class="timer-value" id="breakTime">05:00</div>
+                    </div>
+                    <div class="button-group" id="timerButtons">
+                        <button class="btn btn-blue" onclick="startTimer('study')">Start Study</button>
+                        <button class="btn btn-green" onclick="startTimer('break')">Start Break</button>
+                    </div>
+                    <div class="button-group" id="activeButtons" style="display: none;">
+                        <button class="btn btn-yellow" onclick="toggleTimer()">
+                            <span id="pausePlayIcon">⏸️</span>
+                            <span id="pausePlayText">Pause</span>
+                        </button>
+                        <button class="btn btn-red" onclick="resetTimer()">🔄</button>
+                    </div>
+                    <div id="statusText"></div>
+                </div>
+            </div>
+
+            <!-- Score Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span>🏆</span>
+                    <h2 class="card-title">Score</h2>
+                </div>
+                <div class="score-display">
+                    <div class="score-value" id="score">0</div>
+                    <div class="high-score">High Score: <span id="highScore">0</span></div>
+                    <div id="comboDisplay"></div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">How to Play</h2>
+                </div>
+                <ul class="instructions">
+                    <li>🎯 Hover or click bubbles to pop them</li>
+                    <li>⚡ Build combos for bonus points</li>
+                    <li>🏆 Each bubble = 10 points + combo bonus</li>
+                    <li>💣 Avoid bombs! They reduce score by 20</li>
+                    <li>⚠️ Missed bubbles reduce score by 5</li>
+                    <li>⏱️ Use the study timer to manage your time</li>
+                    <li>🧘 Take breaks and de-stress!</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <div class="empty-state" id="emptyState">Bubbles incoming...</div>
+        </div>
+
+        <div class="footer">
+            <p class="footer-text">💪 You've got this! Study hard, break smart! 💫</p>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let bubbles = [];
+        let score = 0;
+        let combo = 0;
+        let highScore = 0;
+        let studySeconds = 25 * 60;
+        let breakSeconds = 5 * 60;
+        let isStudying = false;
+        let isBreak = false;
+        let timerRunning = false;
+        let timerInterval = null;
+        let comboTimeout = null;
+        let bubbleInterval = null;
+        let moveInterval = null;
+        let lastTrailTime = 0;
+        let isMouseInGameArea = false;
+
+        const colors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6'];
+
+        // Track mouse position in game area
+        const gameArea = document.getElementById('gameArea');
+        gameArea.addEventListener('mouseenter', () => {
+            isMouseInGameArea = true;
+        });
+        gameArea.addEventListener('mouseleave', () => {
+            isMouseInGameArea = false;
+        });
+
+        // Mouse trail effect
+        document.addEventListener('mousemove', (e) => {
+            if (!isMouseInGameArea) return; // Only show trail in game area
+            
+            const now = Date.now();
+            if (now - lastTrailTime > 15) { // More frequent trail creation (was 30)
+                createTrail(e.clientX, e.clientY);
+                lastTrailTime = now;
+            }
+        });
+
+        function createTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            trail.style.left = (x - 4) + 'px'; // Center the smaller trail
+            trail.style.top = (y - 4) + 'px';
+            trail.style.display = 'block'; // Show the trail
+            document.body.appendChild(trail);
+            setTimeout(() => trail.remove(), 300); // Shorter duration (was 600)
+        }
+
+        // Audio context for sound generation
+        let audioContext = null;
+
+        // Initialize audio context on first user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Play pop sound
+        function playPopSound() {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Play bomb sound
+        function playBombSound() {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.3);
+            
+            gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Create stars
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.opacity = Math.random() * 0.7 + 0.3;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Format time
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            document.getElementById('studyTime').textContent = formatTime(studySeconds);
+            document.getElementById('breakTime').textContent = formatTime(breakSeconds);
+        }
+
+        // Start timer
+        function startTimer(type) {
+            if (type === 'study') {
+                isStudying = true;
+                isBreak = false;
+            } else {
+                isBreak = true;
+                isStudying = false;
+            }
+            timerRunning = true;
+            document.getElementById('timerButtons').style.display = 'none';
+            document.getElementById('activeButtons').style.display = 'flex';
+            updateStatus();
+            startTimerInterval();
+        }
+
+        // Toggle timer
+        function toggleTimer() {
+            timerRunning = !timerRunning;
+            document.getElementById('pausePlayIcon').textContent = timerRunning ? '⏸️' : '▶️';
+            document.getElementById('pausePlayText').textContent = timerRunning ? 'Pause' : 'Resume';
+            if (timerRunning) {
+                startTimerInterval();
+            } else {
+                clearInterval(timerInterval);
+            }
+        }
+
+        // Reset timer
+        function resetTimer() {
+            timerRunning = false;
+            isStudying = false;
+            isBreak = false;
+            studySeconds = 25 * 60;
+            breakSeconds = 5 * 60;
+            clearInterval(timerInterval);
+            document.getElementById('timerButtons').style.display = 'flex';
+            document.getElementById('activeButtons').style.display = 'none';
+            document.getElementById('statusText').innerHTML = '';
+            updateTimerDisplay();
+        }
+
+        // Start timer interval
+        function startTimerInterval() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timerRunning) {
+                    if (isStudying) {
+                        studySeconds--;
+                        if (studySeconds <= 0) {
+                            studySeconds = 25 * 60;
+                            isStudying = false;
+                            isBreak = true;
+                            timerRunning = false;
+                            updateStatus();
+                        }
+                    } else if (isBreak) {
+                        breakSeconds--;
+                        if (breakSeconds <= 0) {
+                            breakSeconds = 5 * 60;
+                            isBreak = false;
+                            timerRunning = false;
+                            resetTimer();
+                        }
+                    }
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        // Update status
+        function updateStatus() {
+            const statusDiv = document.getElementById('statusText');
+            if (isStudying) {
+                statusDiv.innerHTML = '<div class="status-text status-study">📚 Study Mode Active</div>';
+            } else if (isBreak) {
+                statusDiv.innerHTML = '<div class="status-text status-break">☕ Break Time - Play & Relax!</div>';
+            } else {
+                statusDiv.innerHTML = '';
+            }
+        }
+
+        // Create bubble
+        function createBubble() {
+            if (bubbles.length < 25) { // Increased from 20 to 25
+                const isBomb = Math.random() < 0.15; // 15% chance of bomb
+                const bubble = {
+                    id: Date.now() + Math.random(),
+                    x: Math.random() * 85 + 5,
+                    y: 100,
+                    size: Math.random() * 30 + 40,
+                    color: isBomb ? 'bomb' : colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 0.5 + 0.3,
+                    isBomb: isBomb
+                };
+                bubbles.push(bubble);
+                renderBubble(bubble);
+            }
+        }
+
+        // Render bubble
+        function renderBubble(bubble) {
+            const gameArea = document.getElementById('gameArea');
+            const bubbleEl = document.createElement('div');
+            bubbleEl.className = `bubble ${bubble.color}`;
+            bubbleEl.id = `bubble-${bubble.id}`;
+            bubbleEl.style.left = bubble.x + '%';
+            bubbleEl.style.top = bubble.y + '%';
+            bubbleEl.style.width = bubble.size + 'px';
+            bubbleEl.style.height = bubble.size + 'px';
+            bubbleEl.onclick = () => popBubble(bubble);
+            bubbleEl.onmouseenter = () => popBubble(bubble); // Pop on hover
+            
+            const inner = document.createElement('div');
+            inner.className = 'bubble-inner';
+            bubbleEl.appendChild(inner);
+            
+            // Add bomb icon if it's a bomb
+            if (bubble.isBomb) {
+                const bombIcon = document.createElement('div');
+                bombIcon.className = 'bomb-icon';
+                bombIcon.textContent = '💣';
+                bubbleEl.appendChild(bombIcon);
+            }
+            
+            gameArea.appendChild(bubbleEl);
+            updateEmptyState();
+        }
+
+        // Move bubbles
+        function moveBubbles() {
+            bubbles = bubbles.filter(bubble => {
+                bubble.y -= bubble.speed;
+                const bubbleEl = document.getElementById(`bubble-${bubble.id}`);
+                
+                // Check if bubble reached the top (escaped)
+                if (bubble.y < -10) {
+                    if (bubbleEl) bubbleEl.remove();
+                    
+                    // Only penalize for regular bubbles escaping, not bombs
+                    if (!bubble.isBomb) {
+                        score = Math.max(0, score - 5); // Lose 5 points
+                        document.getElementById('score').textContent = score;
+                        combo = 0; // Reset combo
+                        updateComboDisplay();
+                    }
+                    return false;
+                }
+                if (bubbleEl) {
+                    bubbleEl.style.top = bubble.y + '%';
+                }
+                return true;
+            });
+            updateEmptyState();
+        }
+
+        // Pop bubble
+        function popBubble(bubble) {
+            const bubbleEl = document.getElementById(`bubble-${bubble.id}`);
+            if (!bubbleEl) return; // Already popped
+            
+            // Check if it's a bomb
+            if (bubble.isBomb) {
+                playBombSound();
+                createParticles(bubble.x, bubble.y, 'bomb', true);
+                bubbleEl.remove();
+                bubbles = bubbles.filter(b => b.id !== bubble.id);
+                
+                // Decrease score by 20 points (but not below 0)
+                score = Math.max(0, score - 20);
+                combo = 0; // Reset combo
+                
+                document.getElementById('score').textContent = score;
+                updateComboDisplay();
+                updateEmptyState();
+                
+                // Visual feedback for bomb
+                flashScreen();
+                return;
+            }
+            
+            // Regular bubble
+            playPopSound();
+            createParticles(bubble.x, bubble.y, bubble.color, false);
+            bubbleEl.remove();
+            
+            bubbles = bubbles.filter(b => b.id !== bubble.id);
+            
+            const points = 10 + (combo * 5);
+            score += points;
+            combo++;
+            
+            if (score > highScore) {
+                highScore = score;
+                document.getElementById('highScore').textContent = highScore;
+            }
+            
+            document.getElementById('score').textContent = score;
+            updateComboDisplay();
+            
+            clearTimeout(comboTimeout);
+            comboTimeout = setTimeout(() => {
+                combo = 0;
+                updateComboDisplay();
+            }, 1500);
+            
+            updateEmptyState();
+        }
+
+        // Flash screen for bomb effect
+        function flashScreen() {
+            const gameArea = document.getElementById('gameArea');
+            gameArea.style.transition = 'background 0.1s';
+            gameArea.style.background = 'rgba(239, 68, 68, 0.3)';
+            setTimeout(() => {
+                gameArea.style.background = 'linear-gradient(180deg, rgba(30, 58, 138, 0.3) 0%, rgba(88, 28, 135, 0.3) 100%)';
+            }, 100);
+        }
+
+        // Create particles
+        function createParticles(x, y, colorClass, isBomb) {
+            const gameArea = document.getElementById('gameArea');
+            const particleCount = isBomb ? 20 : 12;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = `particle ${colorClass}`;
+                const angle = (i * (360 / particleCount)) * Math.PI / 180;
+                const distance = isBomb ? 80 : 50;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                particle.style.left = x + '%';
+                particle.style.top = y + '%';
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                if (isBomb) {
+                    particle.style.background = 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)';
+                }
+                gameArea.appendChild(particle);
+                setTimeout(() => particle.remove(), 500);
+            }
+        }
+
+        // Update combo display
+        function updateComboDisplay() {
+            const comboDiv = document.getElementById('comboDisplay');
+            if (combo > 1) {
+                comboDiv.innerHTML = `
+                    <div class="combo-badge">
+                        <div class="combo-text">🔥 ${combo}x COMBO!</div>
+                        <div class="combo-bonus">+${combo * 5} bonus points</div>
+                    </div>
+                `;
+            } else {
+                comboDiv.innerHTML = '';
+            }
+        }
+
+        // Update empty state
+        function updateEmptyState() {
+            const emptyState = document.getElementById('emptyState');
+            emptyState.style.display = bubbles.length === 0 ? 'flex' : 'none';
+        }
+
+        // Initialize
+        createStars();
+        updateTimerDisplay();
+        
+        bubbleInterval = setInterval(createBubble, 900); // Even faster spawn rate (was 1200)
+        moveInterval = setInterval(moveBubbles, 20);
+    </script>
+</body>
+</html>
